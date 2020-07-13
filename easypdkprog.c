@@ -29,7 +29,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "fpdkihex8.h"
 #include "argp.h"
 
-const char *argp_program_version                = "easypdkprog 1.2";
+#ifndef EPDKVER
+#define EPDKVER "unknown version"
+#endif
+
+const char *argp_program_version                = "easypdkprog " EPDKVER;
 static const char easypdkprog_doc[]             = "easypdkprog -- read, write and execute programs on PADAUK microcontroller\nhttps://free-pdk.github.io";
 static const char easypdkprog_args_doc[]        = "list|probe|read|write|erase|start [FILE]";
 
@@ -237,10 +241,11 @@ int main( int argc, const char * argv [] )
   }
 
   unsigned int hw_major, hw_minor, sw_major, sw_minor, proto_major, proto_minor;
-  if( !FPDKCOM_GetVersion(comfd, &hw_major, &hw_minor, &sw_major, &sw_minor, &proto_major, &proto_minor) )
+  char fwstr[130];
+  if( !FPDKCOM_GetVersion(comfd, &hw_major, &hw_minor, &sw_major, &sw_minor, &proto_major, &proto_minor, fwstr, sizeof(fwstr)) )
     return -1;
 
-  verbose_printf("FREE-PDK EASY PROG - Hardware:%u.%u Firmware:%u.%u Protocol:%u.%u\n", hw_major, hw_minor, sw_major, sw_minor, proto_major, proto_minor);
+  verbose_printf("%s",fwstr);
 
   switch( arguments.command )
   {

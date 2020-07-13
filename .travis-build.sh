@@ -8,16 +8,28 @@ if [ -z $TRAVIS_OS_NAME ]; then
     exit -1
 fi
 
+EPDKVER=$(git describe --abbrev=0)
+
+GIT=$(git describe --tags --always)
+DATE=$(date +'%Y%m%d')
+if [ "_$OSTYPE" = "_firmware" ]; then
+  make -C Firmware/source all EPDKVER=\\\"$EPDKVER\\\" EPDKSUB=
+  mkdir -p build/EASYPDKPROG_FIRMWARE
+  cp Firmware/source/build/EASYPDKPROG.dfu Firmware/LICENCE-ADDITONAL Firmware/README build/EASYPDKPROG_FIRMWARE
+  cd build
+  zip -r -9 "EASYPDKPROG_FIRMWARE_${DATE}_${GIT}.zip" "EASYPDKPROG_FIRMWARE"
+  cd ..
+  exit 0
+fi
+
 if [ "_$OSTYPE" = "_msys" ]; then
   unset CC
   export CC=i686-w64-mingw32-gcc
   export STRIP=i686-w64-mingw32-strip
 fi
 
-make all
+make all EPDKVER=$EPDKVER 
 
-GIT=$(git describe --tags --always)
-DATE=$(date +'%Y%m%d')
 DESTDIR="build/EASYPDKPROG"
 mkdir -p $DESTDIR
 
@@ -37,9 +49,6 @@ else
 fi
 
 cp INSTALL LICENSE $DESTDIR
-
-mkdir -p  $DESTDIR/Firmware
-cp Firmware/EASYPDKPROG.dfu Firmware/LICENCE-ADDITONAL Firmware/README $DESTDIR/Firmware
 
 cp -r Examples $DESTDIR
 
